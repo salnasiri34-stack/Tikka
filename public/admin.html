@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم - تكة</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; --primary: #f59e0b; --danger: #ef4444; }
+    body { font-family: Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+    aside { width: 240px; background: var(--card); border-left: 1px solid #334155; display: flex; flex-direction: column; }
+    .logo { padding: 20px; font-size: 20px; font-weight: bold; color: var(--primary); text-align: center; border-bottom: 1px solid #334155; }
+    .tab-link { padding: 15px 20px; color: var(--muted); text-decoration: none; display: block; border-left: 4px solid transparent; transition: 0.2s; cursor: pointer; }
+    .tab-link:hover, .tab-link.active { background: #334155; color: var(--text); border-left-color: var(--primary); }
+    main { flex: 1; padding: 30px; overflow-y: auto; }
+    section { display: none; }
+    section:first-of-type { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #334155; font-size: 14px; }
+    th { background: #2b3a55; }
+    .btn { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+    .btn.danger { background: var(--danger); color: #fff; }
+    .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .status-new { background: #3b82f6; color: #fff; }
+    .status-accepted { background: #10b981; color: #fff; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); padding: 25px; border-radius: 10px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .modal input, .modal textarea, .modal select { width: 100%; padding: 10px; margin: 10px 0; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 5px; box-sizing: border-box; }
+    .order-flash { animation: flash 1.5s ease; }
+    @keyframes flash { 0% { background: #f59e0b55; } 100% { background: transparent; } }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <div class="logo">⚡ منصة تكة</div>
+    <a class="tab-link active" data-tab="orders"><i class="fas fa-box"></i> الطلبات</a>
+    <a class="tab-link" data-tab="products"><i class="fas fa-tags"></i> المنتجات</a>
+    <a class="tab-link" data-tab="discounts"><i class="fas fa-percent"></i> كوبونات الخصم</a>
+    <a class="tab-link" data-tab="settings"><i class="fas fa-cog"></i> الإعدادات</a>
+    <div style="margin-top: auto; padding: 20px;">
+      <button id="logoutBtn" class="btn danger" style="width: 100%;">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- قسم الطلبات -->
+    <section id="tab-orders">
+      <h2>إدارة الطلبات الفورية</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>رقم الطلب</th>
+            <th>العميل والعنوان</th>
+            <th>الجوال</th>
+            <th>المنتجات</th>
+            <th>المجموع</th>
+            <th>الدفع</th>
+            <th>الحالة</th>
+            <th>الإجراء</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </section>
+
+    <!-- قسم المنتجات -->
+    <section id="tab-products">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>إدارة المنتجات</h2>
+        <button id="addProductBtn" class="btn outline">+ إضافة منتج جديد</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>اسم المنتج</th>
+            <th>التصنيف</th>
+            <th>السعر</th>
+            <th>الحالة</th>
+            <th>تحكم</th>
+          </tr>
+        </thead>
+        <tbody id="productsBody"></tbody>
+      </table>
+    </section>
+
+    <!-- قسم كوبونات الخصم -->
+    <section id="tab-discounts">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>كوبونات الخصم</h2>
+        <button id="addDiscountBtn" class="btn outline">+ إضافة كوبون</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>الكود</th>
+            <th>نوع الخصم</th>
+            <th>القيمة</th>
+            <th>الحالة</th>
+            <th>تحكم</th>
+          </tr>
+        </thead>
+        <tbody id="discountsBody"></tbody>
+      </table>
+    </section>
+
+    <!-- قسم الإعدادات -->
+    <section id="tab-settings">
+      <h2>إعدادات المتجر والشريط العلوي</h2>
+      <div style="background: var(--card); padding: 20px; border-radius: 8px; max-width: 500px; margin-top: 20px;">
+        <label>نص الشريط المتحرك (البانر):</label>
+        <input type="text" id="bannerText" style="width: 100%; padding: 10px; margin: 10px 0; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 5px;">
+        <label><input type="checkbox" id="bannerActive"> تفعيل الشريط</label>
+        <br><br>
+        <button id="saveSettingsBtn" class="btn outline">حفظ الإعدادات</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- نافذة إضافة وتعديل المنتج -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal">
+      <h3 id="productModalTitle">إضافة منتج</h3>
+      <input type="hidden" id="productId">
+      <label>اسم المنتج</label>
+      <input type="text" id="pName">
+      <label>الوصف</label>
+      <textarea id="pDesc"></textarea>
+      <label>السعر</label>
+      <input type="number" id="pPrice">
+      <label>التصنيف</label>
+      <input type="text" id="pCategory">
+      <label>رابط الصورة</label>
+      <input type="text" id="pImage">
+      <label><input type="checkbox" id="pActive" checked> منتظِم (ظاهر للعملاء)</label>
+      <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <button id="saveProductBtn" class="btn outline" style="flex: 1;">حفظ</button>
+        <button class="btn danger" data-close-modal style="flex: 1;">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إضافة كوبون -->
+  <div class="modal-overlay" id="discountModal">
+    <div class="modal">
+      <h3>إضافة كوبون خصم</h3>
+      <label>كود الخصم (مثال: TIKKA50)</label>
+      <input type="text" id="dCode">
+      <label>نوع الخصم</label>
+      <select id="dType">
+        <option value="percent">نسبة مئوية (%)</option>
+        <option value="fixed">مبلغ ثابت</option>
+      </select>
+      <label>القيمة</label>
+      <input type="number" id="dValue">
+      <label><input type="checkbox" id="dActive" checked> مفعّل</label>
+      <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <button id="saveDiscountBtn" class="btn outline" style="flex: 1;">حفظ</button>
+        <button class="btn danger" data-close-modal style="flex: 1;">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- تضمين مكتبة Socket.io وكود الأدمين الذي أرسلته مسبقاً -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
