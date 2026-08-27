@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل دخول لوحة التحكم - تكة</title>
+  <style>
+    body { font-family: Tahoma, sans-serif; background: #0f172a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .login-card { background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 320px; text-align: center; }
+    input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #f59e0b; border: none; border-radius: 6px; font-weight: bold; color: #000; cursor: pointer; }
+    button:hover { background: #d97706; }
+    .error { color: #ef4444; font-size: 14px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h2>لوحة تحكم تكة</h2>
+    <p style="color: #94a3b8; font-size: 13px;">يرجى إدخال كلمة المرور للمتابعة</p>
+    <form id="loginForm">
+      <input type="password" id="password" placeholder="كلمة المرور (admin123)" required>
+      <button type="submit">دخول</button>
+      <div id="errorMsg" class="error"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = '/admin';
+      } else {
+        document.getElementById('errorMsg').textContent = data.message || 'خطأ في كلمة المرور';
+      }
+    });
+  </script>
+</body>
+</html>
